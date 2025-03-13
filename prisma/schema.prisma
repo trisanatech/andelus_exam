@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String           @id @default(uuid()) @db.Uuid
+  email             String           @unique
+  passwordHash      String?
+  displayName       String?
+  username          String?          @unique
+  imageUrl          String?
+  timeZone          String?
+  active            Boolean          @default(true)
+  emailVerified     DateTime?
+  provider          String?
+  providerId        String?
+  providerAccountId String?          @unique
+  roleId            String           @db.Uuid
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  lastLoginAt       DateTime?
+  accounts          Account[]
+  sessions          Session[]
+  role              Role             @relation(fields: [roleId], references: [id])
+  auditLogs         AuditLog[]
+  Exam              Exam[]           @relation("TeacherExams")
+  ExamAssignment    ExamAssignment[]
+  Submission        Submission[]
+  Result            Result[]
+
+  @@index([email])
+  @@index([provider, providerId])
+  @@map("users")
+  Subject Subject[] @relation("SubjectTeachers")
+}
+
+model Role {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String           @unique
+  description String?
+  isDefault   Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  // permissions RolePermission[]
+  users       User[]
+
+  @@map("roles")
+}
+
+// model Permission {
+//   id          String           @id @default(uuid()) @db.Uuid
+//   name        String           @unique
+//   description String?
+//   resource    String
+//   action      String
+//   createdAt   DateTime         @default(now())
+//   updatedAt   DateTime         @updatedAt
+//   roles       RolePermission[]
+
+//   @@index([resource, action])
+//   @@map("permissions")
+// }
+
+// model RolePermission {
+//   id           String     @id @default(uuid()) @db.Uuid
+//   roleId       String     @db.Uuid
+//   permissionId String     @db.Uuid
+//   createdAt    DateTime   @default(now())
+//   updatedAt    DateTime   @updatedAt
+//   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+//   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+//   @@unique([roleId, permissionId])
+//   @@map("role_permissions")
+// }
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  sessionToken String   @unique
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @db.Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjects          Subject[] // Many-to-many relation
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  timestamp DateTime @default(now())
+  userId    String   @db.Uuid
+  action    String
+  resource  String
+  details   Json
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([timestamp])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+
+// // KEZI BUHALA YALEW ENE ADD YAREKUT NEW
+model Exam {
+  id                  String         @id @default(uuid()) @db.Uuid
+  title               String
+  subjectId           String         @db.Uuid
+  gradeLevel          String
+  examCode            String         
+  duration            Int
+  scheduledAt         DateTime       @db.Timestamptz
+  // endAt               DateTime       @db.Timestamptz
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  maxScore            Int            @default(100)
+  instructions        String?
+  shuffleOptions      Boolean        @default(false)
+  randomizeOrder      Boolean        @default(false)
+  status              ExamStatus     @default(DRAFT)
+  teacherId           String         @db.Uuid
+  passingScore        Int?
+  isMock              Boolean        @default(false)
+
+  subject     Subject          @relation(fields: [subjectId], references: [id])
+  createdBy   User             @relation("TeacherExams", fields: [teacherId], references: [id])
+  questions   Question[]
+  assignments ExamAssignment[]
+  submissions Submission[]
+  results     Result[]
+
+  @@index([subjectId, scheduledAt])
+  @@index([teacherId])
+}
+
+enum ExamStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+model Subject {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String    @unique
+  code        String    @unique
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  exams       Exam[]
+  teachers    User[]     @relation("SubjectTeachers")
+
+  Account Account[]
+}
+
+model ExamAssignment {
+  id          String   @id @default(uuid()) @db.Uuid
+  examId      String   @db.Uuid
+  studentId   String   @db.Uuid
+  status      AssignmentStatus @default(ASSIGNED)
+  assignedAt  DateTime @default(now())
+  dueAt       DateTime @db.Timestamptz
+  lastAccessed DateTime?
+
+  exam    Exam  @relation(fields: [examId], references: [id])
+  student User  @relation(fields: [studentId], references: [id])
+
+  @@index([examId, studentId])
+}
+
+enum AssignmentStatus {
+  ASSIGNED
+  STARTED
+  SUBMITTED
+  OVERDUE
+}
+
+model Question {
+  id            String   @id @default(uuid()) @db.Uuid
+  examId        String   @db.Uuid
+  type          QuestionType @default(SINGLE_CHOICE)
+  content       Json
+  options       Json
+  correctAnswer Json
+  points        Int      @default(1)
+  order         Int
+  diagram       String?
+  explanation   String?
+
+  exam Exam @relation(fields: [examId], references: [id])
+
+  @@index([examId, order])
+  @@unique([examId, order])
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+model Submission {
+  id           String     @id @default(uuid()) @db.Uuid
+  examId       String     @db.Uuid
+  studentId    String     @db.Uuid
+  answers      Json
+  score        Float?
+  gradedById   String?    @db.Uuid
+  status       SubmissionStatus @default(DRAFT)
+  startedAt    DateTime?
+  submittedAt  DateTime?
+  updatedAt    DateTime   @updatedAt
+
+  exam      Exam  @relation(fields: [examId], references: [id])
+  student   User  @relation(fields: [studentId], references: [id])
+ 
+  @@index([examId, studentId])
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  LATE
+  GRADED
+}
+
+model Result {
+  id          String   @id @default(uuid()) @db.Uuid
+  examId      String   @db.Uuid
+  studentId   String   @db.Uuid
+  totalScore  Float
+  maxScore    Float
+  percentage  Float
+  grade       String?
+  feedback    String?
+  gradedAt    DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  exam    Exam @relation(fields: [examId], references: [id])
+  student User @relation(fields: [studentId], references: [id])
+
+  @@index([examId, studentId])
+}
+
+model ExamSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  examId      String   @db.Uuid
+  studentId   String   @db.Uuid
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  ipAddress   String?
+  userAgent   String?
+  actions     Json
+  heartbeat   DateTime
+  deviceInfo  Json?
+
+  @@index([examId, studentId])
+}

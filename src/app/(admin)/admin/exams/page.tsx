@@ -150,10 +150,10 @@ export default function AdminExamsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="DRAFT">DRAFT</SelectItem>
-                      <SelectItem value="SCHEDULED">SCHEDULED</SelectItem>
+                      {/* <SelectItem value="SCHEDULED">SCHEDULED</SelectItem> */}
                       <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                      <SelectItem value="COMPLETED">COMPLETED</SelectItem>
-                      <SelectItem value="ARCHIVED">ARCHIVED</SelectItem>
+                      {/* <SelectItem value="COMPLETED">COMPLETED</SelectItem> */}
+                      {/* <SelectItem value="ARCHIVED">ARCHIVED</SelectItem> */}
                     </SelectContent>
                   </Select>
                 </div>

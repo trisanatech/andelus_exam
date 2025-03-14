@@ -13,7 +13,7 @@ import { Boxes } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-switcher";
 import { UserAuthNav } from "@/components/user-auth-nav";
 import { cn } from "../lib/utils";
-
+import { Circle } from "lucide-react";
 export function Navbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -53,13 +53,14 @@ export function Navbar() {
       <div className="container flex h-16 items-center px-4">
         <div className="flex w-full items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <Boxes className="h-6 w-6 text-primary" />
+            <div className="h-8 w-8 flex items-center justify-center rounded-full border border-primary text-primary font-bold">
+              A
+            </div>
             <span className="hidden font-bold sm:inline-block">
               <span className="text-primary">Andelus-Exam</span>
               <span className="text-muted-foreground">System</span>
             </span>
           </Link>
-
           <div className="flex items-center gap-6">
             <NavigationMenu>
               <NavigationMenuList className="flex gap-6">

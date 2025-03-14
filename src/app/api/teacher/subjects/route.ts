@@ -16,15 +16,33 @@ export async function GET() {
 }
 
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { name } = await req.json();
+    const body = await request.json();
+    const { name, code, description } = body;
+
+    // Validate required fields
+    if (!name || !code) {
+      return NextResponse.json(
+        { error: "Name and code are required" },
+        { status: 400 }
+      );
+    }
+
     const subject = await prisma.subject.create({
-      data: { name },
+      data: {
+        name,
+        code,
+        description,
+      },
     });
-    return NextResponse.json(subject);
+
+    return NextResponse.json(subject, { status: 201 });
   } catch (error) {
     console.error("Error creating subject:", error);
-    return NextResponse.json({ error: "Failed to create subject" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create subject" },
+      { status: 500 }
+    );
   }
 }

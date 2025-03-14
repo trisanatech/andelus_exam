@@ -13,12 +13,27 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react"; // plus icon
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export function ExamDetailsForm() {
   const form = useFormContext();
-  // Fetch subjects from API; replace with your API route
+  // Fetch subjects from API
   const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [subjectModalOpen, setSubjectModalOpen] = useState(false);
+  const [newSubject, setNewSubject] = useState({
+    name: "",
+    code: "",
+    description: "",
+  });
+  const [createLoading, setCreateLoading] = useState(false);
 
   useEffect(() => {
     async function fetchSubjects() {
@@ -39,8 +54,35 @@ export function ExamDetailsForm() {
     fetchSubjects();
   }, []);
 
+  async function handleCreateSubject() {
+    setCreateLoading(true);
+    try {
+      const res = await fetch("/api/teacher/subjects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newSubject),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Add the new subject to the list
+        setSubjects((prev) => [...prev, data]);
+        // Optionally, set the new subject as selected
+        form.setValue("subjectId", data.id);
+        setSubjectModalOpen(false);
+        setNewSubject({ name: "", code: "", description: "" });
+      } else {
+        console.error("Failed to create subject");
+      }
+    } catch (error) {
+      console.error("Error creating subject", error);
+    } finally {
+      setCreateLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
+      {/* Other Exam Details Fields */}
       <div className="grid grid-cols-3 gap-6">
         <FormField
           control={form.control}
@@ -55,7 +97,7 @@ export function ExamDetailsForm() {
             </FormItem>
           )}
         />
- <FormField
+        <FormField
           control={form.control}
           name="examCode"
           render={({ field }) => (
@@ -68,17 +110,6 @@ export function ExamDetailsForm() {
             </FormItem>
           )}
         />
-        {/* <FormField
-        control={form.control}
-        name="isMock"
-        render={({ field }) => (
-          <FormItem className="flex items-center space-x-2">
-            <FormLabel>Mock Exam?</FormLabel>
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-          </FormItem>
-        )}
-      /> */}
-
         <FormField
           control={form.control}
           name="isMock"
@@ -100,6 +131,8 @@ export function ExamDetailsForm() {
           )}
         />
       </div>
+
+      {/* Subjects and Grade Level */}
       <div className="grid grid-cols-2 gap-6">
         <FormField
           control={form.control}
@@ -107,26 +140,34 @@ export function ExamDetailsForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Subject</FormLabel>
-              <FormControl>
-                <select
-                  {...field}
-                  className="w-full p-2 border rounded-lg bg-background"
-                >
-                  <option value="" disabled>
-                    {loading ? "Loading subjects..." : "Select a subject"}
-                  </option>
-                  {subjects.map((subject) => (
-                    <option key={subject.id} value={subject.id}>
-                      {subject.name}
+              <div className="flex items-center">
+                <FormControl>
+                  <select
+                    {...field}
+                    className="w-full p-2 border rounded-lg bg-background"
+                  >
+                    <option value="" disabled>
+                      {loading ? "Loading subjects..." : "Select a subject"}
                     </option>
-                  ))}
-                </select>
-              </FormControl>
+                    {subjects.map((subject) => (
+                      <option key={subject.id} value={subject.id}>
+                        {subject.name}
+                      </option>
+                    ))}
+                  </select>
+                </FormControl>
+                <button
+                  type="button"
+                  onClick={() => setSubjectModalOpen(true)}
+                  className="ml-2 p-2 border rounded-lg hover:bg-muted"
+                >
+                  <Plus className="h-5 w-5" />
+                </button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="gradeLevel"
@@ -142,6 +183,7 @@ export function ExamDetailsForm() {
         />
       </div>
 
+      {/* Other fields remain unchanged */}
       <div className="grid grid-cols-2 gap-6">
         <FormField
           control={form.control}
@@ -159,7 +201,6 @@ export function ExamDetailsForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="duration"
@@ -178,7 +219,6 @@ export function ExamDetailsForm() {
           )}
         />
       </div>
-
       <FormField
         control={form.control}
         name="instructions"
@@ -196,7 +236,6 @@ export function ExamDetailsForm() {
           </FormItem>
         )}
       />
-
       <div className="space-y-4">
         <FormField
           control={form.control}
@@ -218,7 +257,6 @@ export function ExamDetailsForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="randomizeOrder"
@@ -240,6 +278,51 @@ export function ExamDetailsForm() {
           )}
         />
       </div>
+
+      {/* Subject Creation Modal */}
+      <Dialog open={subjectModalOpen} onOpenChange={setSubjectModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Subject</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <Input
+              value={newSubject.name}
+              onChange={(e) =>
+                setNewSubject((prev) => ({ ...prev, name: e.target.value }))
+              }
+              placeholder="Subject Name"
+            />
+            <Input
+              value={newSubject.code}
+              onChange={(e) =>
+                setNewSubject((prev) => ({ ...prev, code: e.target.value }))
+              }
+              placeholder="Subject Code"
+            />
+            <Textarea
+              value={newSubject.description}
+              onChange={(e) =>
+                setNewSubject((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder="Subject Description"
+            />
+          </div>
+          <DialogFooter>
+            <button
+              type="button"
+              onClick={handleCreateSubject}
+              disabled={createLoading}
+              className="btn btn-primary"
+            >
+              {createLoading ? "Creating..." : "Create Subject"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

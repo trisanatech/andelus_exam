@@ -17,111 +17,31 @@ async function main() {
     },
   });
 
-  const userRole = await prisma.role.upsert({
-    where: { name: 'USER' },
+  const teacherRole = await prisma.role.upsert({
+    where: { name: 'TEACHER' },
     update: {},
     create: {
-      name: 'USER',
+      name: 'TEACHER',
+      description: 'Default user role',
+      isDefault: false,
+    },
+  });
+ await prisma.role.upsert({
+    where: { name: 'STUDENT' },
+    update: {},
+    create: {
+      name: 'STUDENT',
       description: 'Default user role',
       isDefault: true,
     },
   });
 
-  // Create permissions
-  const permissions = await Promise.all([
-    // User permissions
-    prisma.permission.upsert({
-      where: { name: 'user:read' },
-      update: {},
-      create: {
-        name: 'user:read',
-        description: 'Can read user information',
-        resource: 'user',
-        action: 'read',
-      },
-    }),
-    prisma.permission.upsert({
-      where: { name: 'user:write' },
-      update: {},
-      create: {
-        name: 'user:write',
-        description: 'Can create and update users',
-        resource: 'user',
-        action: 'write',
-      },
-    }),
-    prisma.permission.upsert({
-      where: { name: 'user:delete' },
-      update: {},
-      create: {
-        name: 'user:delete',
-        description: 'Can delete users',
-        resource: 'user',
-        action: 'delete',
-      },
-    }),
-    // Role permissions
-    prisma.permission.upsert({
-      where: { name: 'role:manage' },
-      update: {},
-      create: {
-        name: 'role:manage',
-        description: 'Can manage roles and permissions',
-        resource: 'role',
-        action: 'manage',
-      },
-    }),
-    // User management permissions
-    prisma.permission.upsert({
-      where: { name: 'MANAGE_USER_PERMISSIONS' },
-      update: {},
-      create: {
-        name: 'MANAGE_USER_PERMISSIONS',
-        description: 'Can manage user permissions and roles',
-        resource: 'user',
-        action: 'manage_permissions',
-      },
-    }),
-  ]);
 
-  // Assign permissions to roles
-  // Admin gets all permissions
-  await Promise.all(
-    permissions.map(permission =>
-      prisma.rolePermission.upsert({
-        where: {
-          roleId_permissionId: {
-            roleId: adminRole.id,
-            permissionId: permission.id,
-          },
-        },
-        update: {},
-        create: {
-          roleId: adminRole.id,
-          permissionId: permission.id,
-        },
-      })
-    )
-  );
 
-  // Regular users only get user:read permission
-  await prisma.rolePermission.upsert({
-    where: {
-      roleId_permissionId: {
-        roleId: userRole.id,
-        permissionId: permissions[0].id, // user:read permission
-      },
-    },
-    update: {},
-    create: {
-      roleId: userRole.id,
-      permissionId: permissions[0].id,
-    },
-  });
 
   // Create default users
-  const adminPassword = await hash('admin123', 12);
-  const userPassword = await hash('user123', 12);
+  const adminPassword = await hash('admin1234', 12);
+  const userPassword = await hash('teacher1234', 12);
 
   // Create admin user
   await prisma.user.upsert({
@@ -140,14 +60,14 @@ async function main() {
 
   // Create regular user
   await prisma.user.upsert({
-    where: { email: 'user@example.com' },
+    where: { email: 'teacher@example.com' },
     update: {},
     create: {
-      email: 'user@example.com',
+      email: 'teacher@example.com',
       passwordHash: userPassword,
-      displayName: 'Regular User',
-      username: 'user',
-      roleId: userRole.id,
+      displayName: 'Teacher User',
+      username: 'teacher',
+      roleId: teacherRole.id,
       emailVerified: new Date(),
       active: true,
     },

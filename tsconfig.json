@@ -13,6 +13,16 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitThis": false,
+    "alwaysStrict": false,
+    "checkJs": false,
+    "noFallthroughCasesInSwitch": false,
+    "skipDefaultLibCheck": true,
+    "forceConsistentCasingInFileNames": false,
+    "downlevelIteration": true,
     "plugins": [
       {
         "name": "next"
@@ -22,6 +32,12 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "/*.ts",
+    "/*.tsx",
+    ".next/types/**/*.ts",
+    "public/sw.js"
+  ],
   "exclude": ["node_modules"]
 }

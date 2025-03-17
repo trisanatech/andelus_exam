@@ -7,7 +7,7 @@ export async function GET() {
     const mockExams = await prisma.exam.findMany({
       where: {
         isMock: true,
-        status: "ACTIVE",
+        // status: "ACTIVE",
         // scheduledAt: { lte: new Date() },
       },
       include: {

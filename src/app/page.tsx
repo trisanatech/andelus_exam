@@ -7,7 +7,7 @@ export default function LandingPage() {
           A
         </div>
         <h1 className="text-4xl md:text-5xl font-bold leading-tight max-w-3xl">
-          Andelus School Exam Management System <br /> for Grade 12
+          Andelus School Exam Management System <br /> for Grade 12th
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mt-4">
           A seamless platform to create, manage, and analyze exams efficiently.

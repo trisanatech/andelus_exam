@@ -17,14 +17,15 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-background min-h-screen">
+      <body className="bg-background min-h-screen overflow-x-hidden">
         <Providers>
           <div className="flex flex-col min-h-screen">
             <ConditionalNavbar />
-            <div className="container flex gap-2 py-0 px-0">
-              <main className="flex-1">{children}</main>
-              <Toaster />
-            </div>
+            <div className="w-full gap-2 py-0 px-0">
+  <main className="overflow-hidden w-full">{children}</main>
+  <Toaster /> 
+</div>
+
           </div>
         </Providers>
       </body>

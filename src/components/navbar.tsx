@@ -49,8 +49,8 @@ export function Navbar() {
   }
 
   return (
-    <div className="border-b bg-background">
-      <div className="container flex h-16 items-center px-4">
+    <div className="border-b border-border bg-background">
+      <div className="w-full max-w-screen-xl flex h-16 items-center px-4 mx-auto">
         <div className="flex w-full items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 flex items-center justify-center rounded-full border border-primary text-primary font-bold">
@@ -63,7 +63,7 @@ export function Navbar() {
           </Link>
           <div className="flex items-center gap-6">
             <NavigationMenu>
-              <NavigationMenuList className="flex gap-6">
+              <NavigationMenuList className="flex gap-4">
                 <NavigationMenuItem>
                   <Link
                     href="/"
@@ -77,14 +77,14 @@ export function Navbar() {
                     Home
                   </Link>
                 </NavigationMenuItem>
-                {/* Render role-based navigation items */}
+                {/* Role-based navigation items */}
                 {navItems.map((item) => (
                   <NavigationMenuItem key={item.href}>
                     <Link
                       href={item.href}
                       className={cn(
                         "text-sm font-medium transition-colors hover:text-primary relative py-2",
-                        pathname.startsWith(item.href)
+                        pathname === item.href || pathname.includes(item.href)
                           ? "text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary"
                           : "text-muted-foreground"
                       )}
@@ -102,4 +102,5 @@ export function Navbar() {
       </div>
     </div>
   );
+  
 }

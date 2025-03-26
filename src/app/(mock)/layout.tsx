@@ -1,7 +1,7 @@
 
 import { auth } from '@/lib/auth'; // Ensure your auth() returns the session with role info
 // import { redirect } from "next/navigation";
-
+import "katex/dist/katex.min.css";
 export default async function TeacherLayout({
   children,
 }: {

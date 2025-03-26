@@ -70,8 +70,8 @@ export function Sidebar() {
         ))}
       </div>
       <div className="space-y-1">
-        <span className="text-sm">© 2025 TRISANA TECH.</span>
-        <p className="text-sm text-muted-foreground">All Rights Reserved.</p>
+        <span className="text-sm">© 2025 TRISANA TECH</span>
+        <p className="text-sm text-muted-foreground">ANDELUS EDUCATION & TRADE | All Rights Reserved.</p>
       </div>
     </div>
   );

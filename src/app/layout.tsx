@@ -1,9 +1,9 @@
 import "./globals.css";
+import "katex/dist/katex.min.css";
 import { Providers } from "./providers";
 import { Metadata } from "next";
 import { Toaster } from "@/components/ui/sonner";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
-
 export const metadata: Metadata = {
   title: "Andelus Exam System",
   description: "Description of the exam system",

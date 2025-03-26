@@ -25,7 +25,6 @@
 //     </div>
 //   );
 // }
-
 import { Sidebar } from '@/components/sidebar';
 import { auth } from '@/lib/auth'; // Ensure your auth() returns the session with role info
 import { redirect } from "next/navigation";

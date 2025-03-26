@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import Link from "next/link";
 import { Loading } from "@/components/loading";
+import { SafeHTMLWithMath } from "../take/components/SafeHTMLWithMath";
 
 type Exam = {
   id: string;
@@ -187,56 +188,72 @@ export default function MyExamResultPage() {
       </div>
 
       {/* Detailed Question Breakdown */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Question Breakdown</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {exam.questions.map((question: any, index: number) => {
-            const studentAnswer = answerMap[question.id];
-            const correctAnswer = Array.isArray(question.correctAnswer)
-              ? question.correctAnswer[0]
-              : question.correctAnswer;
-            const isCorrect = String(studentAnswer).trim() === String(correctAnswer).trim();
-            return (
-              <details key={question.id} className="border rounded-lg p-4">
-                <summary className="flex justify-between items-center cursor-pointer">
-                  <span>Question {index + 1}</span>
-                  <Badge variant={isCorrect ? "success" : "destructive"}>
-                    {isCorrect ? "Correct" : "Incorrect"}
-                  </Badge>
-                </summary>
-                <div className="mt-2 space-y-2">
-                  <p className="text-muted-foreground">
-                    {typeof question.content === "object" ? question.content.text : question.content}
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Your Answer</p>
-                      <p className="font-medium">
-                        {studentAnswer != null
-                          ? typeof question.options[Number(studentAnswer)] === "object"
-                            ? question.options[Number(studentAnswer)].text
-                            : question.options[Number(studentAnswer)]
-                          : "No answer"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Correct Answer</p>
-                      <p className="font-medium text-green-600">
-                        {typeof question.options[Number(correctAnswer)] === "object"
-                          ? question.options[Number(correctAnswer)].text
-                          : question.options[Number(correctAnswer)]}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </details>
-            );
-          })}
-        </CardContent>
-      </Card>
-
+           <Card>
+     <CardHeader>
+       <CardTitle>Question Breakdown</CardTitle>
+     </CardHeader>
+     <CardContent className="space-y-4">
+       {exam.questions.map((question: any, index: number) => {
+         const studentAnswer = answerMap[question.id];
+         const correctAnswer = Array.isArray(question.correctAnswer)
+           ? question.correctAnswer[0]
+           : question.correctAnswer;
+         const isCorrect =
+           String(studentAnswer).trim() === String(correctAnswer).trim();
+         return (
+           <details key={question.id} className="border rounded-lg p-4">
+             <summary className="flex justify-between items-center cursor-pointer">
+               <span>Question {index + 1}</span>
+               <Badge variant={isCorrect ? "success" : "destructive"}>
+                 {isCorrect ? "Correct" : "Incorrect"}
+               </Badge>
+             </summary>
+             <div className="mt-2 space-y-2">
+               <div className="text-muted-foreground">
+                 <SafeHTMLWithMath
+                   html={
+                     typeof question.content === "object"
+                       ? question.content.text
+                       : question.content
+                   }
+                 />
+               </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <div>
+                   <p className="text-sm text-muted-foreground">Your Answer</p>
+                   <div className="font-medium">
+                     {studentAnswer != null ? (
+                       <SafeHTMLWithMath
+                         html={
+                           typeof question.options[Number(studentAnswer)] === "object"
+                             ? question.options[Number(studentAnswer)].text
+                             : question.options[Number(studentAnswer)] || ""
+                         }
+                       />
+                     ) : (
+                       "No answer"
+                     )}
+                   </div>
+                 </div>
+                 <div>
+                   <p className="text-sm text-muted-foreground">Correct Answer</p>
+                   <div className="font-medium text-green-600">
+                     <SafeHTMLWithMath
+                       html={
+                         typeof question.options[Number(correctAnswer)] === "object"
+                           ? question.options[Number(correctAnswer)].text
+                           : question.options[Number(correctAnswer)] || ""
+                       }
+                     />
+                   </div>
+                 </div>
+               </div>
+             </div>
+           </details>
+         );
+       })}
+     </CardContent>
+   </Card>
       {/* Exam Report */}
       <Card>
         <CardHeader>

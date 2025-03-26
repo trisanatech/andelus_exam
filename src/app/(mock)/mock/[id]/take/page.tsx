@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import Loading from "./loading";
 import InstructionModal from "./components/InstructionModal";
 import ConfirmSubmitModal from "./components/ConfirmSubmitModal";
+import {SafeHTMLWithMath} from "./components/SafeHTMLWithMath";
 
 export default function MockExamPage() {
   const router = useRouter();
@@ -306,63 +307,71 @@ export default function MockExamPage() {
 
         {/* Detailed Question Breakdown */}
         <Card>
-          <CardHeader>
-            <CardTitle>Question Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {exam.questions.map((question: any, index: number) => {
-              const studentAnswer = answerMap[question.id];
-              const correctAnswer = Array.isArray(question.correctAnswer)
-                ? question.correctAnswer[0]
-                : question.correctAnswer;
-              const isCorrect =
-                String(studentAnswer).trim() === String(correctAnswer).trim();
-              return (
-                <details key={question.id} className="border rounded-lg p-4">
-                  <summary className="flex justify-between items-center cursor-pointer">
-                    <span>Question {index + 1}</span>
-                    <Badge variant={isCorrect ? "success" : "destructive"}>
-                      {isCorrect ? "Correct" : "Incorrect"}
-                    </Badge>
-                  </summary>
-                  <div className="mt-2 space-y-2">
-                    <p className="text-muted-foreground">
-                      {typeof question.content === "object"
-                        ? question.content.text
-                        : question.content}
-                    </p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Your Answer
-                        </p>
-                        <p className="font-medium">
-                          {studentAnswer != null
-                            ? typeof question.options[Number(studentAnswer)] ===
-                              "object"
-                              ? question.options[Number(studentAnswer)].text
-                              : question.options[Number(studentAnswer)]
-                            : "No answer"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Correct Answer
-                        </p>
-                        <p className="font-medium text-green-600">
-                          {typeof question.options[Number(correctAnswer)] ===
-                          "object"
-                            ? question.options[Number(correctAnswer)].text
-                            : question.options[Number(correctAnswer)]}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </details>
-              );
-            })}
-          </CardContent>
-        </Card>
+  <CardHeader>
+    <CardTitle>Question Breakdown</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    {exam.questions.map((question: any, index: number) => {
+      const studentAnswer = answerMap[question.id];
+      const correctAnswer = Array.isArray(question.correctAnswer)
+        ? question.correctAnswer[0]
+        : question.correctAnswer;
+      const isCorrect =
+        String(studentAnswer).trim() === String(correctAnswer).trim();
+      return (
+        <details key={question.id} className="border rounded-lg p-4">
+          <summary className="flex justify-between items-center cursor-pointer">
+            <span>Question {index + 1}</span>
+            <Badge variant={isCorrect ? "success" : "destructive"}>
+              {isCorrect ? "Correct" : "Incorrect"}
+            </Badge>
+          </summary>
+          <div className="mt-2 space-y-2">
+            <div className="text-muted-foreground">
+              <SafeHTMLWithMath
+                html={
+                  typeof question.content === "object"
+                    ? question.content.text
+                    : question.content
+                }
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Your Answer</p>
+                <div className="font-medium">
+                  {studentAnswer != null ? (
+                    <SafeHTMLWithMath
+                      html={
+                        typeof question.options[Number(studentAnswer)] === "object"
+                          ? question.options[Number(studentAnswer)].text
+                          : question.options[Number(studentAnswer)] || ""
+                      }
+                    />
+                  ) : (
+                    "No answer"
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Correct Answer</p>
+                <div className="font-medium text-green-600">
+                  <SafeHTMLWithMath
+                    html={
+                      typeof question.options[Number(correctAnswer)] === "object"
+                        ? question.options[Number(correctAnswer)].text
+                        : question.options[Number(correctAnswer)] || ""
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+      );
+    })}
+  </CardContent>
+</Card>
 
         {/* Exam Report */}
         <Card>
@@ -436,74 +445,76 @@ export default function MockExamPage() {
             </Badge>
           </div>
         </div>
-        <Card className="flex-1">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle>
-                {typeof exam.questions[currentQuestion].content === "object"
-                  ? exam.questions[currentQuestion].content.text
-                  : exam.questions[currentQuestion].content}
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={toggleFlag}>
-                {flaggedQuestions.has(currentQuestion) ? (
-                  <>
-                    <FlagOff className="w-4 h-4 mr-2" /> Unflag
-                  </>
-                ) : (
-                  <>
-                    <Flag className="w-4 h-4 mr-2" /> Flag
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <RadioGroup
-              value={answers[exam.questions[currentQuestion].id] || ""}
-              onValueChange={handleAnswer}
-            >
-              {exam.questions[currentQuestion].options.map(
-                (option: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
-                  >
-                    <RadioGroupItem
-                      value={index.toString()}
-                      id={`option-${index}`}
-                    />
-                    <Label
-                      htmlFor={`option-${index}`}
-                      className="flex-1 cursor-pointer"
-                    >
-                      {typeof option === "object" ? option.text : option}
-                    </Label>
-                  </div>
-                )
-              )}
-            </RadioGroup>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
-              disabled={currentQuestion === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentQuestion((p) =>
-                  Math.min(exam.questions.length - 1, p + 1)
-                )
-              }
-              disabled={currentQuestion === exam.questions.length - 1}
-            >
-              Next
-            </Button>
-          </CardFooter>
-        </Card>
+        <Card className="flex-1 relative">
+  <CardHeader className="pb-3 relative">
+    <CardTitle>
+      <SafeHTMLWithMath
+        html={
+          typeof exam.questions[currentQuestion].content === "object"
+            ? exam.questions[currentQuestion].content.text
+            : exam.questions[currentQuestion].content
+        }
+      />
+    </CardTitle>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleFlag}
+      className="absolute top-5 right-5"
+    >
+      {flaggedQuestions.has(currentQuestion) ? (
+        <>
+          <FlagOff className="w-4 h-4 mr-2" /> Unflag
+        </>
+      ) : (
+        <>
+          <Flag className="w-4 h-4 mr-2" /> Flag
+        </>
+      )}
+    </Button>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <RadioGroup
+      value={answers[exam.questions[currentQuestion].id] || ""}
+      onValueChange={handleAnswer}
+    >
+      {exam.questions[currentQuestion].options.map(
+        (option: any, index: number) => (
+          <div
+            key={index}
+            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
+          >
+            <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+            <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+              <SafeHTMLWithMath html={typeof option === "object" ? option.text : option} />
+            </Label>
+          </div>
+        )
+      )}
+    </RadioGroup>
+  </CardContent>
+  <CardFooter className="flex justify-between pt-4">
+    <Button
+      variant="outline"
+      onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
+      disabled={currentQuestion === 0}
+    >
+      Previous
+    </Button>
+    <Button
+      variant="outline"
+      onClick={() =>
+        setCurrentQuestion((p) =>
+          Math.min(exam.questions.length - 1, p + 1)
+        )
+      }
+      disabled={currentQuestion === exam.questions.length - 1}
+    >
+      Next
+    </Button>
+  </CardFooter>
+</Card>
+
         <div className="mt-4">
           <Button
             className="w-full"

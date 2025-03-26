@@ -64,7 +64,6 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const examId = params.id;
     const data = await req.json();
-
     // First, update the exam's basic details
     const updatedExam = await prisma.exam.update({
       where: { id: examId },
@@ -79,6 +78,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         randomizeOrder: data.randomizeOrder,
         passingScore: data.passingScore,
         isMock: data.isMock,
+        maxScore: data.maxScore,
         examCode: data.examCode,
       },
     });
@@ -102,8 +102,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         });
       }
     }
-
-    return NextResponse.json({ message: "Exam updated", exam: updatedExam });
+    const redirectTo = session.user.role === "ADMIN" ? "/admin/exams" : "/teacher/exams";
+    return NextResponse.json({ message: "Exam updated", exam: updatedExam ,  redirectTo });
   } catch (error: any) {
     console.error("Error updating exam:", error);
     return NextResponse.json({ error: "Failed to update exam" }, { status: 500 });

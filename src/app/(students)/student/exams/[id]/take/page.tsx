@@ -310,6 +310,7 @@ import Loading from "./loading";
 import InstructionModal from "./components/InstructionModal";
 import ConfirmSubmitModal from "./components/ConfirmSubmitModal";
 import { useVisibilityWarning } from "./components/useVisibilityWarning";
+import { SafeHTMLWithMath } from "./components/SafeHTMLWithMath";
 
 export default function TakeExamPage() {
   const router = useRouter();
@@ -364,23 +365,23 @@ export default function TakeExamPage() {
           if (prev <= 1) {
             clearInterval(interval);
             toast("Time is up! Auto-submitting your exam.", {
-              variant: "warning",
               duration: 3000,
+              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
             });
             handleSubmit(true); // auto-submit with no confirmation
             return 0;
           }
           if (!tenMinuteWarnedRef.current && prev <= 10 * 60) {
             toast("Warning: Only 10 minutes remaining!", {
-              variant: "warning",
-              duration: 3000,
+              duration: 5000,
+              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
             });
             tenMinuteWarnedRef.current = true;
           }
           if (!twoMinuteWarnedRef.current && prev <= 2 * 60) {
             toast("Last warning: Only 2 minutes remaining!", {
-              variant: "warning",
-              duration: 3000,
+              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
+              duration: 5000,
             });
             twoMinuteWarnedRef.current = true;
           }
@@ -527,74 +528,77 @@ export default function TakeExamPage() {
             </Badge>
           </div>
         </div>
-        <Card className="flex-1">
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle>
-                {typeof exam.questions[currentQuestion].content === "object"
-                  ? exam.questions[currentQuestion].content.text
-                  : exam.questions[currentQuestion].content}
-              </CardTitle>
-              <Button variant="ghost" size="sm" onClick={toggleFlag}>
-                {flaggedQuestions.has(currentQuestion) ? (
-                  <>
-                    <FlagOff className="w-4 h-4 mr-2" /> Unflag
-                  </>
-                ) : (
-                  <>
-                    <Flag className="w-4 h-4 mr-2" /> Flag
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <RadioGroup
-              value={answers[exam.questions[currentQuestion].id] || ""}
-              onValueChange={handleAnswer}
-            >
-              {exam.questions[currentQuestion].options.map(
-                (option: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
-                  >
-                    <RadioGroupItem
-                      value={index.toString()}
-                      id={`option-${index}`}
-                    />
-                    <Label
-                      htmlFor={`option-${index}`}
-                      className="flex-1 cursor-pointer"
-                    >
-                      {typeof option === "object" ? option.text : option}
-                    </Label>
-                  </div>
-                )
-              )}
-            </RadioGroup>
-          </CardContent>
-          <CardFooter className="flex justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
-              disabled={currentQuestion === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentQuestion((p) =>
-                  Math.min(exam.questions.length - 1, p + 1)
-                )
-              }
-              disabled={currentQuestion === exam.questions.length - 1}
-            >
-              Next
-            </Button>
-          </CardFooter>
-        </Card>
+        <Card className="flex-1 relative">
+  <CardHeader className="pb-3 relative">
+    <CardTitle>
+      <SafeHTMLWithMath
+        html={
+          typeof exam.questions[currentQuestion].content === "object"
+            ? exam.questions[currentQuestion].content.text
+            : exam.questions[currentQuestion].content
+        }
+      />
+    </CardTitle>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={toggleFlag}
+      className="absolute top-5 right-5"
+    >
+      {flaggedQuestions.has(currentQuestion) ? (
+        <>
+          <FlagOff className="w-4 h-4 mr-2" /> Unflag
+        </>
+      ) : (
+        <>
+          <Flag className="w-4 h-4 mr-2" /> Flag
+        </>
+      )}
+    </Button>
+  </CardHeader>
+  <CardContent className="space-y-4">
+  <hr className="border-t border-gray-300" />
+    <RadioGroup
+      value={answers[exam.questions[currentQuestion].id] || ""}
+      onValueChange={handleAnswer}
+    >
+      {exam.questions[currentQuestion].options.map(
+        (option: any, index: number) => (
+          <div
+            key={index}
+            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
+          >
+            <RadioGroupItem value={index.toString()} id={`option-${index}`} />
+            <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
+              <SafeHTMLWithMath html={typeof option === "object" ? option.text : option} />
+            </Label>
+          </div>
+        )
+      )}
+    </RadioGroup>
+  </CardContent>
+  <CardFooter className="flex justify-between pt-4">
+    <Button
+      variant="outline"
+      onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
+      disabled={currentQuestion === 0}
+    >
+      Previous
+    </Button>
+    <Button
+      variant="outline"
+      onClick={() =>
+        setCurrentQuestion((p) =>
+          Math.min(exam.questions.length - 1, p + 1)
+        )
+      }
+      disabled={currentQuestion === exam.questions.length - 1}
+    >
+      Next
+    </Button>
+  </CardFooter>
+</Card>
+
         <div className="mt-4">
           <Button
             className="w-full"

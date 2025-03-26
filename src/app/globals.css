@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -209,4 +208,131 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+/* Add these rules */
+.math-node {
+  min-height: 24px;
+  padding: 2px 4px;
+  margin: 0 2px;
+  color: hsl(var(--foreground)) !important;
+}
+
+.katex {
+  padding: 4px !important;
+  color: currentColor !important;
+}
+
+.katex-display {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Tiptap content styling */
+.ProseMirror {
+  color: hsl(var(--foreground));
+}
+
+.ProseMirror:focus {
+  border-color: hsl(var(--ring)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--ring)/0.1);
+}
+/* For math editor textareas */
+.math-node textarea:focus {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-color: hsl(var(--ring));
+}
+
+/* For option editors */
+.ProseMirror-focused {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 1px hsl(var(--primary));
+}
+
+/* Add transition for smooth focus effects */
+.ProseMirror, input, textarea, .math-node {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.ProseMirror p {
+  color: hsl(var(--foreground));
+}
+
+.ProseMirror h1,
+.ProseMirror h2,
+.ProseMirror h3,
+.ProseMirror h4,
+.ProseMirror h5,
+.ProseMirror h6 {
+  color: hsl(var(--foreground));
+}
+
+.ProseMirror a {
+  color: hsl(var(--primary));
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  color: hsl(var(--foreground));
+}
+
+.ProseMirror code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+.ProseMirror pre {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.prose {
+  color: hsl(var(--foreground));
+}
+
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: hsl(var(--foreground));
+}
+
+.prose a {
+  color: hsl(var(--primary));
+}
+
+.prose ul, .prose ol {
+  color: hsl(var(--foreground));
+}
+
+.prose code {
+  background-color: hsl(var(--muted));
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+}
+
+.prose pre {
+  background-color: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+}
+
+.prose .katex {
+  font-size: 1.1em;
+}
+
+/* global.css */
+.katex-display {
+  margin: 1em 0 !important;
+  padding: 1rem !important;
+  background: hsl(var(--muted)) !important;
+  border-radius: var(--radius);
+}
+
+.katex {
+  font: normal 1.21em KaTeX_Main !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+.katex .base {
+  white-space: normal !important;
 }

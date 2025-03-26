@@ -59,6 +59,7 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
       const payload = {
         ...data,
         scheduledAt: data.scheduledAt.toISOString(),
+        maxScore: data.questions.reduce((sum, q) => sum + (q.points || 1), 0),
       };
 
       const res = await fetch(`/api/teacher/exams/${exam.id}`, {
@@ -70,8 +71,11 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
       if (!res.ok) {
         throw new Error("Failed to update exam");
       }
-      toast.success("Exam updated successfully!");
-      router.push("/teacher/exams");
+      // Parse response
+    const responseData = await res.json();
+
+    toast.success("Exam updated successfully!");
+      router.push(responseData.redirectTo);
     } catch (error: any) {
       toast.error(error.message || "Failed to update exam. Please try again.");
     } finally {

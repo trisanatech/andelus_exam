@@ -21,6 +21,54 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TextStyle from "@tiptap/extension-text-style";
+import Underline from "@tiptap/extension-underline";
+import Strike from "@tiptap/extension-strike";
+import TextAlign from "@tiptap/extension-text-align";
+import Link from "@tiptap/extension-link";
+import { EditorToolbar } from "./EditorToolbar1";
+
+const RichTextEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      TextStyle,
+      Underline,
+      Strike,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Link,
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+      const html = editor.getHTML();
+      onChange(html);
+    },
+  });
+
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
+
+  useEffect(() => {
+    return () => {
+      editor?.destroy();
+    };
+  }, [editor]);
+  return (
+    <div className="rounded-lg border bg-background">
+      <EditorToolbar editor={editor} />
+      <EditorContent
+        editor={editor}
+        className="min-h-[150px] p-4 prose max-w-full focus:outline-none"
+        placeholder="Enter exam instructions..."
+      />
+    </div>
+  );
+};
 
 export function ExamDetailsForm() {
   const form = useFormContext();
@@ -220,22 +268,21 @@ export function ExamDetailsForm() {
         />
       </div>
       <FormField
-        control={form.control}
-        name="instructions"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Instructions</FormLabel>
-            <FormControl>
-              <Textarea
-                {...field}
-                rows={4}
-                placeholder="Enter exam instructions..."
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+    control={form.control}
+    name="instructions"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Instructions</FormLabel>
+        <FormControl>
+          <RichTextEditor
+            value={field.value || ""}
+            onChange={field.onChange}
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
       <div className="space-y-4">
         <FormField
           control={form.control}
@@ -326,3 +373,4 @@ export function ExamDetailsForm() {
     </div>
   );
 }
+

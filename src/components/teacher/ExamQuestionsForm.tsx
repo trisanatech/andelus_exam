@@ -13,14 +13,18 @@ export function ExamQuestionsForm() {
     setValue("questions", [
       ...questions,
       {
-        content: { text: "" },
-        options: ["", ""],
-        correctAnswer: [],
+        content: { text: "<p>Enter question text here...</p>" },
+        options: [
+          { text: "<p>Option 1</p>" },
+          { text: "<p>Option 2</p>" },
+        ],
+        // Set the first option as the default correct answer
+        correctAnswer: ["0"],
         points: 1,
       },
     ]);
   };
-
+  
   return (
     <div className="space-y-6">
       <div className="space-y-4">

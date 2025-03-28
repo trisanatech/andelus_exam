@@ -28,7 +28,9 @@ export function ExamReview() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Duration</p>
-              <p className="font-medium">{exam.duration ? exam.duration + " minutes" : "Not specified"}</p>
+              <p className="font-medium">
+                {exam.duration ? exam.duration + " minutes" : "Not specified"}
+              </p>
             </div>
           </div>
         </CardContent>
@@ -51,7 +53,7 @@ export function ExamReview() {
                   </p>
                   <div className="mt-2 space-y-2">
                     {question.options && question.options.length > 0 ? (
-                      question.options.map((option: string, optionIndex: number) => (
+                      question.options.map((option: any, optionIndex: number) => (
                         <div key={optionIndex} className="flex items-center gap-2">
                           <input
                             type="checkbox"
@@ -59,7 +61,7 @@ export function ExamReview() {
                             readOnly
                             className="w-4 h-4"
                           />
-                          <p>{option}</p>
+                          <p>{option.text}</p>
                         </div>
                       ))
                     ) : (

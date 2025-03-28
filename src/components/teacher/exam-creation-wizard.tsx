@@ -198,6 +198,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 // Extend your schema to include a boolean flag for mock exams.
+// examcreationwizard.tsx (updated snippet)
 const formSchema = z.object({
   title: z.string().min(3, "Exam title must be at least 3 characters"),
   subjectId: z.string().uuid("Please select a valid subject"),
@@ -209,19 +210,29 @@ const formSchema = z.object({
   passingScore: z.number().optional(),
   gradeLevel: z.string().min(1, "Grade level is required"),
   examCode: z.string().min(1, "Exam Code is required"),
-  // New field for mock exam
   isMock: z.boolean().default(false),
   questions: z
     .array(
       z.object({
-        content: z.object({ text: z.string().min(5, "Question text must be at least 5 characters") }),
-        options: z.array(z.string().min(1, "Each option must be provided")).min(2, "At least 2 options are required"),
-        correctAnswer: z.array(z.string()).min(1, "At least one correct answer is required"),
+        content: z.object({
+          text: z.string().min(5, "Question text must be at least 5 characters"),
+        }),
+        options: z
+          .array(
+            z.object({
+              text: z.string().min(1, "Each option must be provided"),
+            })
+          )
+          .min(2, "At least 2 options are required"),
+        correctAnswer: z
+          .array(z.string())
+          .min(1, "At least one correct answer is required"),
         points: z.number().min(1, "Points must be at least 1"),
       })
     )
     .min(1, "At least one question is required"),
 });
+
 
 export default function ExamCreationWizard({ onSuccess }: { onSuccess: (examId: string) => void }) {
   const [step, setStep] = useState(1);
@@ -260,6 +271,9 @@ export default function ExamCreationWizard({ onSuccess }: { onSuccess: (examId: 
     } else {
       toast.error("Please fill out all required fields before proceeding.");
     }
+    
+
+    
   };
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {

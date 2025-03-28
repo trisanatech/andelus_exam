@@ -337,9 +337,9 @@
   white-space: normal !important;
 }
 
-.ProseMirror {
+/* .ProseMirror {
   min-height: 150px;
-}
+} */
 
 .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);

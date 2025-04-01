@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, useFieldArray } from "react-hook-form";
 import { useRouter } from "next/navigation";
-// import { ExamDetailsForm } from "./exam-details-form";
-// import { ExamQuestionsForm } from "./exam-questions-form";
 import { ExamDetailsForm } from "./ExamDetailsForm";
 import { ExamQuestionsForm } from "./ExamQuestionsForm";
 import { Button } from "@/components/ui/button";
@@ -31,7 +29,9 @@ type TeacherExamEditFormProps = {
 };
 
 export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) {
-  // Initialize react-hook-form with default values, including exam questions.
+  // Sort the questions by order to ensure they load correctly.
+  const sortedQuestions = exam.questions.sort((a, b) => a.order - b.order);
+
   const methods = useForm({
     defaultValues: {
       title: exam.title,
@@ -45,8 +45,14 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
       passingScore: exam.passingScore,
       isMock: exam.isMock,
       examCode: exam.examCode,
-      questions: exam.questions, // Pre-populate with existing questions
+      questions: sortedQuestions,
     },
+  });
+
+  // useFieldArray for managing questions
+  const { fields, append, remove, move } = useFieldArray({
+    control: methods.control,
+    name: "questions",
   });
 
   const router = useRouter();
@@ -55,11 +61,11 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
   const onSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      // Convert Date objects to ISO strings
+      // Convert Date objects to ISO strings and compute maxScore
       const payload = {
         ...data,
         scheduledAt: data.scheduledAt.toISOString(),
-        maxScore: data.questions.reduce((sum, q) => sum + (q.points || 1), 0),
+        maxScore: data.questions.reduce((sum: number, q: any) => sum + (q.points || 1), 0),
       };
 
       const res = await fetch(`/api/teacher/exams/${exam.id}`, {
@@ -71,10 +77,8 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
       if (!res.ok) {
         throw new Error("Failed to update exam");
       }
-      // Parse response
-    const responseData = await res.json();
-
-    toast.success("Exam updated successfully!");
+      const responseData = await res.json();
+      toast.success("Exam updated successfully!");
       router.push(responseData.redirectTo);
     } catch (error: any) {
       toast.error(error.message || "Failed to update exam. Please try again.");
@@ -86,10 +90,12 @@ export default function TeacherExamEditForm({ exam }: TeacherExamEditFormProps) 
   return (
     <FormProvider {...methods}>
       <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Exam Details Form (title, subject, etc.) */}
+        {/* Exam Details Form */}
         <ExamDetailsForm />
-        {/* Exam Questions Form to edit questions */}
-        <ExamQuestionsForm />
+
+        {/* Pass the field array helpers and fields to ExamQuestionsForm */}
+        <ExamQuestionsForm fields={fields} append={append} remove={remove} />
+
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Updating..." : "Update Exam"}
         </Button>

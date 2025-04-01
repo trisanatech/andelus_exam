@@ -54,17 +54,23 @@ export async function POST(req: Request) {
   }
 }
 
-
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "TEACHER" && session.user.role !== "ADMIN") {
+  if (
+    !session ||
+    (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const examId = params.id;
     const data = await req.json();
-    // First, update the exam's basic details
+
+    // Update the exam's basic details.
     const updatedExam = await prisma.exam.update({
       where: { id: examId },
       data: {
@@ -83,29 +89,68 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       },
     });
 
-    // Next, update the exam questions.
-    // In this simple approach, we delete all existing questions and re-create them.
-    await prisma.question.deleteMany({ where: { examId } });
-    if (data.questions && data.questions.length > 0) {
-      for (const [index, question] of data.questions.entries()) {
+    // Retrieve all existing questions for this exam.
+    const existingQuestions = await prisma.question.findMany({
+      where: { examId },
+    });
+    
+    // Get a list of IDs from the incoming data.
+    const incomingQuestionIds = data.questions
+      .map((q: any) => q.id)
+      .filter((id: string) => id); // filter out falsy values
+
+    // Delete questions that exist in the DB but were removed from the payload.
+    const questionsToDelete = existingQuestions.filter(
+      (q) => !incomingQuestionIds.includes(q.id)
+    );
+    if (questionsToDelete.length > 0) {
+      await prisma.question.deleteMany({
+        where: {
+          id: { in: questionsToDelete.map((q) => q.id) },
+        },
+      });
+    }
+
+    // Update existing questions and create new ones.
+    for (const [index, question] of data.questions.entries()) {
+      // Set the order based on the index.
+      const questionData = {
+        examId,
+        content: question.content,
+        options: question.options,
+        correctAnswer: question.correctAnswer,
+        points: question.points,
+        order: index + 1,
+        diagram: question.diagram || null,
+        explanation: question.explanation || null,
+      };
+
+      if (question.id) {
+        // Update the existing question.
+        await prisma.question.update({
+          where: { id: question.id },
+          data: questionData,
+        });
+      } else {
+        // Create a new question.
         await prisma.question.create({
-          data: {
-            examId,
-            content: question.content,
-            options: question.options,
-            correctAnswer: question.correctAnswer,
-            points: question.points,
-            order: index + 1,
-            diagram: question.diagram || null,
-            explanation: question.explanation || null,
-          },
+          data: questionData,
         });
       }
     }
-    const redirectTo = session.user.role === "ADMIN" ? "/admin/exams" : "/teacher/exams";
-    return NextResponse.json({ message: "Exam updated", exam: updatedExam ,  redirectTo });
+
+    const redirectTo =
+      session.user.role === "ADMIN" ? "/admin/exams" : "/teacher/exams";
+    return NextResponse.json({
+      message: "Exam updated",
+      exam: updatedExam,
+      redirectTo,
+    });
   } catch (error: any) {
     console.error("Error updating exam:", error);
-    return NextResponse.json({ error: "Failed to update exam" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update exam" },
+      { status: 500 }
+    );
   }
 }

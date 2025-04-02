@@ -348,3 +348,64 @@
   pointer-events: none;
   height: 0;
 }
+
+/* Tables */
+.ProseMirror table {
+  border-collapse: collapse;
+  margin: 1rem 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5rem 1rem;
+  position: relative;
+}
+
+.ProseMirror .selectedCell:after {
+  background: hsl(var(--primary)/0.2);
+  content: "";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.ProseMirror .column-resize-handle {
+  background-color: hsl(var(--primary));
+  bottom: -2px;
+  position: absolute;
+  right: -2px;
+  pointer-events: none;
+  top: 0;
+  width: 4px;
+}
+
+/* In your global.css */
+.math-node.inline-math {
+  display: inline !important;
+  vertical-align: middle;
+}
+
+.math-node.block-math {
+  margin: 1rem 0;
+}
+
+.katex {
+  padding: 0.1em 0.2em !important;
+}
+
+.inline-math .katex {
+  display: inline-block !important;
+  vertical-align: text-bottom;
+}
+
+.block-math .katex {
+  display: block !important;
+  padding: 1rem 0;
+}

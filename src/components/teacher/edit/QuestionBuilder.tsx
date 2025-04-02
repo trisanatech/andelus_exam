@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "../../../components/ui/button";
+import { Switch } from "../../../components/ui/switch";
 import { Trash } from "lucide-react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -15,6 +15,7 @@ import Link from "@tiptap/extension-link";
 import FontSize from "tiptap-extension-font-size";
 import { MathNode } from "./MathNode";
 import { EditorToolbar } from "./EditorToolbar";
+import React from "react";
 
 const OptionEditor = ({
   content,
@@ -59,10 +60,16 @@ const OptionEditor = ({
     </div>
   );
 };
-export function QuestionBuilder({ index }: { index: number }) {
+
+type QuestionBuilderProps = {
+  index: number;
+  removeQuestion: () => void;
+};
+
+export function QuestionBuilder({ index, removeQuestion }: QuestionBuilderProps) {
   const { watch, setValue } = useFormContext();
   const question = watch(`questions.${index}`);
- 
+
   // Initialize question content: if it's a string, convert it into an object.
   let initialContent = "<p></p>";
   if (typeof question.content === "object" && question.content !== null) {
@@ -106,14 +113,6 @@ export function QuestionBuilder({ index }: { index: number }) {
       ...question.options,
       { text: "<p></p>" },
     ]);
-  };
-
-  const removeQuestion = () => {
-    const currentQuestions = watch("questions");
-    setValue(
-      "questions",
-      currentQuestions.filter((_: any, i: number) => i !== index)
-    );
   };
 
   return (

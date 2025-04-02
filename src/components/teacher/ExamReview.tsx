@@ -3,6 +3,7 @@
 import { useFormContext } from "react-hook-form";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { format } from "date-fns";
+import { SafeHTMLWithMath } from "./SafeHTMLWithMath"; // Import the component
 
 export function ExamReview() {
   const { watch } = useFormContext();
@@ -46,11 +47,15 @@ export function ExamReview() {
               exam.questions.map((question: any, index: number) => (
                 <div key={index} className="border p-4 rounded-lg">
                   <p className="font-medium">Question {index + 1}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {typeof question.content === "object" && question.content !== null
-                      ? question.content.text
-                      : question.content || "No content"}
-                  </p>
+                  <div className="text-sm text-muted-foreground prose max-w-none">
+                    <SafeHTMLWithMath 
+                      html={
+                        (typeof question.content === "object" && question.content !== null
+                          ? question.content.text
+                          : question.content) || ""
+                      }
+                    />
+                  </div>
                   <div className="mt-2 space-y-2">
                     {question.options && question.options.length > 0 ? (
                       question.options.map((option: any, optionIndex: number) => (
@@ -61,7 +66,9 @@ export function ExamReview() {
                             readOnly
                             className="w-4 h-4"
                           />
-                          <p>{option.text}</p>
+                          <div className="prose max-w-none">
+                            <SafeHTMLWithMath html={option.text || ""} />
+                          </div>
                         </div>
                       ))
                     ) : (

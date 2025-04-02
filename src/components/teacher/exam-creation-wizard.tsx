@@ -323,9 +323,10 @@ export default function ExamCreationWizard({ onSuccess }: { onSuccess: (examId: 
               Next
             </Button>
           ) : (
-            <Button type="submit" loading={loading}>
-              Create Exam
-            </Button>
+            <Button type="submit" disabled={loading}>
+            {loading ? "Creating..." : "Create Exam"}
+          </Button>
+          
           )}
         </div>
       </form>

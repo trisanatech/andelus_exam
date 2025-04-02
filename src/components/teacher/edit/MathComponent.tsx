@@ -5,6 +5,7 @@ import { NodeViewContent, NodeViewWrapper } from "@tiptap/react";
 import katex from "katex";
 import { useEffect, useState } from "react";
 import "katex/dist/katex.min.css";
+import React from "react";
 
 export const MathComponent = (props: any) => {
   const [content, setContent] = useState(props.node.attrs.content);
@@ -29,26 +30,20 @@ export const MathComponent = (props: any) => {
       return `<span class="text-red-500">Invalid LaTeX</span>`;
     }
   };
+
   return (
-    <NodeViewWrapper
-      className={`math-node ${inline ? "inline-math" : "block-math"}`}
-      as={inline ? "span" : "div"}
-    >
+    <NodeViewWrapper className="math-node" as={inline ? "span" : "div"}>
       {isEditing ? (
         <textarea
-          className={`bg-background text-foreground p-1 ${
-            inline ? "w-48" : "w-full"
-          }`}
+          className={`bg-yellow-50 p-1 ${inline ? "w-32" : "w-full"}`}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onBlur={() => setIsEditing(false)}
           autoFocus
         />
       ) : (
-        <span
-          className={`cursor-pointer hover:bg-accent/20 p-1 rounded ${
-            inline ? "inline" : "block"
-          }`}
+        <div
+          className={`cursor-pointer hover:bg-gray-100 ${inline ? "inline-block" : "block"}`}
           onClick={() => setIsEditing(true)}
           dangerouslySetInnerHTML={{ __html: renderMath() }}
         />

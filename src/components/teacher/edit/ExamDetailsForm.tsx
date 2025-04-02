@@ -7,11 +7,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { DateTimePicker } from "@/components/ui/date-time-picker";
+} from "../../../components/ui/form";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import { Switch } from "../../../components/ui/switch";
+import { DateTimePicker } from "../../../components/ui/date-time-picker";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react"; // plus icon
 import {
@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from "../../../components/ui/dialog";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TextStyle from "@tiptap/extension-text-style";
@@ -34,6 +34,7 @@ import { Table } from "@tiptap/extension-table";
 import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
+import React from "react";
 
 const RichTextEditor = ({ value, onChange }: { value: string; onChange: (value: string) => void }) => {
   const editor = useEditor({

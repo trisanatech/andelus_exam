@@ -5,7 +5,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "TEACHER" && session.user.role !== "ADMIN") {
+  if (
+    !session ||
+    (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -47,10 +50,16 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ message: "Exam created successfully", exam }, { status: 201 });
+    return NextResponse.json(
+      { message: "Exam created successfully", exam },
+      { status: 201 }
+    );
   } catch (error: any) {
     console.error("Error creating exam:", error);
-    return NextResponse.json({ error: "Failed to create exam" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create exam" },
+      { status: 500 }
+    );
   }
 }
 
@@ -111,46 +120,89 @@ export async function PATCH(
       });
     }
 
-    // Update existing questions and create new ones.
-    for (const [index, question] of data.questions.entries()) {
-      // Set the order based on the index.
-      const questionData = {
-        examId,
-        content: question.content,
-        options: question.options,
-        correctAnswer: question.correctAnswer,
-        points: question.points,
-        order: index + 1,
-        diagram: question.diagram || null,
-        explanation: question.explanation || null,
-      };
+    // Process all question updates/creations in parallel.
+    await Promise.all(
+      data.questions.map((question: any, index: number) => {
+        const questionData = {
+          examId,
+          content: question.content,
+          options: question.options,
+          correctAnswer: question.correctAnswer,
+          points: question.points,
+          order: index + 1,
+          diagram: question.diagram || null,
+          explanation: question.explanation || null,
+        };
 
-      if (question.id) {
-        // Update the existing question.
-        await prisma.question.update({
-          where: { id: question.id },
-          data: questionData,
-        });
-      } else {
-        // Create a new question.
-        await prisma.question.create({
-          data: questionData,
-        });
-      }
-    }
+        if (question.id) {
+          // Update the existing question.
+          return prisma.question.update({
+            where: { id: question.id },
+            data: questionData,
+          });
+        } else {
+          // Create a new question.
+          return prisma.question.create({
+            data: questionData,
+          });
+        }
+      })
+    );
 
     const redirectTo =
       session.user.role === "ADMIN" ? "/admin/exams" : "/teacher/exams";
-    return NextResponse.json({
-      message: "Exam updated",
-      exam: updatedExam,
-      redirectTo,
-    });
+    return NextResponse.json(
+      { message: "Exam updated", exam: updatedExam, redirectTo },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error("Error updating exam:", error);
     return NextResponse.json(
       { error: "Failed to update exam" },
       { status: 500 }
     );
+  }
+}
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const session = await getServerSession(authOptions);
+  if (
+    !session ||
+    (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")
+  ) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    const examId = params.id;
+
+    // Delete all results associated with this exam
+    await prisma.result.deleteMany({
+      where: { examId },
+    });
+
+    // Delete all submissions associated with this exam
+    await prisma.submission.deleteMany({
+      where: { examId },
+    });
+
+    // Delete all questions associated with this exam
+    await prisma.question.deleteMany({
+      where: { examId },
+    });
+
+    // Finally, delete the exam
+    await prisma.exam.delete({
+      where: { id: examId },
+    });
+
+    return NextResponse.json({ message: "Exam deleted successfully" }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error deleting exam:", error);
+    return NextResponse.json({ error: "Failed to delete exam" }, { status: 500 });
   }
 }

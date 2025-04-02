@@ -22,6 +22,13 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 export default function AdminExamsPage() {
   const router = useRouter();
@@ -29,6 +36,10 @@ export default function AdminExamsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingExamId, setUpdatingExamId] = useState<string | null>(null);
+
+  // For delete confirmation modal
+  const [examToDelete, setExamToDelete] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchExams() {
@@ -75,6 +86,32 @@ export default function AdminExamsPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!examToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/teacher/exams/${examToDelete.id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete exam");
+      toast("Exam deleted successfully!", {
+        variant: "success",
+        duration: 3000,
+      });
+      setExams((prev) =>
+        prev.filter((exam) => exam.id !== examToDelete.id)
+      );
+      setExamToDelete(null);
+    } catch (err: any) {
+      toast(err.message || "Error deleting exam", {
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <Loading />;
   if (error) return <p className="p-6 text-red-500">{error}</p>;
 
@@ -83,14 +120,16 @@ export default function AdminExamsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
         <h1 className="text-2xl font-bold">Manage Exams</h1>
-        {/* <Button asChild className="mt-4 sm:mt-0">
+        {/* Uncomment if needed
+        <Button asChild className="mt-4 sm:mt-0">
           <Link
             href="/admin/exams/create"
             className="px-4 py-2 rounded transition"
           >
             Create New Exam
           </Link>
-        </Button> */}
+        </Button>
+        */}
       </div>
 
       {exams.length === 0 ? (
@@ -163,26 +202,57 @@ export default function AdminExamsPage() {
                   <Button variant="outline" size="sm" asChild>
                     <Link href={`/teacher/exams/${exam.id}/edit`}>Edit</Link>
                   </Button>
-                  {/* {exam.status === "ACTIVE" &&
-                    exam._count.submissions > 0 && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/teacher/exams/${exam.id}/results`}>
-                          Results
-                        </Link>
-                      </Button>
-                    )} */}
-                  {exam._count.submissions > 0 && (
+                  {exam._count?.submissions > 0 && (
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/teacher/exams/${exam.id}/results`}>
                         Results
                       </Link>
                     </Button>
                   )}
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setExamToDelete(exam)}
+                  >
+                    Delete
+                  </Button>
                 </div>
               </CardFooter>
             </Card>
           ))}
         </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {examToDelete && (
+        <Dialog open={true} onOpenChange={() => setExamToDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete Exam</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete the exam{" "}
+                <strong>{examToDelete.title}</strong>? This action cannot be
+                undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button
+                variant="secondary"
+                onClick={() => setExamToDelete(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

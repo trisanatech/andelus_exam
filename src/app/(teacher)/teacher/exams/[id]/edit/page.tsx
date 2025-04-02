@@ -1,4 +1,4 @@
-import TeacherExamEditForm from "@/components/teacher/TeacherExamEditForm";
+import TeacherExamEditForm from "@/components/teacher/edit/TeacherExamEditForm";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";

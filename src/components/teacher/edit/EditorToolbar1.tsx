@@ -1,6 +1,6 @@
 // EditorToolbar.tsx
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import React, { useState } from "react";
 import { Editor } from "@tiptap/react";
 import {
@@ -162,7 +162,7 @@ export function EditorToolbar({ editor }: { editor: any }) {
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => editor.chain().focus().insertMathInline({ content: "" }).run()}
+        onClick={() => editor.chain().focus().insertMathInline().run()}
       >
         <Sigma className="h-4 w-4" /> Inline
       </Button> */}
@@ -170,9 +170,50 @@ export function EditorToolbar({ editor }: { editor: any }) {
         type="button"
         variant="outline"
         size="sm"
-        onClick={() => editor.chain().focus().insertMathBlock({ content: "" }).run()}
+        onClick={() => editor.chain().focus().insertMathBlock().run()}
       >
         <Sigma className="h-4 w-4" /> Block
+      </Button>
+
+      {/* Table buttons */}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => editor.chain().focus().insertTable({ 
+          rows: 2, 
+          cols: 2, 
+          withHeaderRow: true 
+        }).run()}
+      >
+        Insert Table
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => editor.chain().focus().addColumnAfter().run()}
+        disabled={!editor.can().addColumnAfter()}
+      >
+        Add Column
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => editor.chain().focus().addRowAfter().run()}
+        disabled={!editor.can().addRowAfter()}
+      >
+        Add Row
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => editor.chain().focus().deleteTable().run()}
+        disabled={!editor.can().deleteTable()}
+      >
+        Delete Table
       </Button>
     </div>
   );

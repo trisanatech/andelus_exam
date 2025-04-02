@@ -1,6 +1,6 @@
 // EditorToolbar.tsx
 "use client";
-import { Button } from "@/components/ui/button";
+import { Button } from "../../../components/ui/button";
 import React, { useState } from "react";
 import { Editor } from "@tiptap/react";
 import {

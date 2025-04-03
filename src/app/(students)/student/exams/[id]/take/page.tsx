@@ -294,7 +294,7 @@ export default function TakeExamPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center">
             <h2 className="text-xl font-bold mb-2">Exam Submitted</h2>
-            <p>please Do NOT navigate to other pages until it loads by itself!</p>
+            <p>please Do NOT navigate to other pages until it loads the page by itself!</p>
           </div>
         </div>
       )}
@@ -351,7 +351,7 @@ export default function TakeExamPage() {
                 variant="ghost"
                 size="sm"
                 onClick={toggleFlag}
-                className="absolute top-5 right-5"
+                className="absolute top-1 right-1"
                 disabled={submitted}
               >
                 {flaggedQuestions.has(currentQuestion) ? (

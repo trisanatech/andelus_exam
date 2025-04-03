@@ -8,7 +8,13 @@ export async function GET(
   try {
     const exam = await prisma.exam.findUnique({
       where: { id: params.id },
-      include: { subject: true, questions: true },
+      include: { 
+        subject: true,  
+        questions: {
+        orderBy: { order: 'asc' },
+      },
+        
+       },
     });
     // Only return if it's a mock exam.
     if (!exam || !exam.isMock) {

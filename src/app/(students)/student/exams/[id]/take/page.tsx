@@ -338,7 +338,7 @@ export default function TakeExamPage() {
   // Monitor visibility/focus
   useVisibilityWarning();
 
-  // Fetch exam data from API
+  // Fetch exam data from API and sort questions by order
   useEffect(() => {
     async function fetchExam() {
       try {
@@ -347,6 +347,12 @@ export default function TakeExamPage() {
         });
         if (!res.ok) throw new Error("Failed to fetch exam");
         const data = await res.json();
+        // Sort the questions array by the 'order' field in ascending order.
+        if (data.questions && Array.isArray(data.questions)) {
+          data.questions = data.questions.sort(
+            (a: any, b: any) => a.order - b.order
+          );
+        }
         setExam(data);
       } catch (error) {
         console.error("Error fetching exam:", error);
@@ -366,7 +372,7 @@ export default function TakeExamPage() {
             clearInterval(interval);
             toast("Time is up! Auto-submitting your exam.", {
               duration: 3000,
-              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
+              style: { backgroundColor: "#DC2626", color: "white" },
             });
             handleSubmit(true); // auto-submit with no confirmation
             return 0;
@@ -374,13 +380,13 @@ export default function TakeExamPage() {
           if (!tenMinuteWarnedRef.current && prev <= 10 * 60) {
             toast("Warning: Only 10 minutes remaining!", {
               duration: 5000,
-              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
+              style: { backgroundColor: "#DC2626", color: "white" },
             });
             tenMinuteWarnedRef.current = true;
           }
           if (!twoMinuteWarnedRef.current && prev <= 2 * 60) {
             toast("Last warning: Only 2 minutes remaining!", {
-              style: { backgroundColor: "#DC2626", color: "white" }, // Red background
+              style: { backgroundColor: "#DC2626", color: "white" },
               duration: 5000,
             });
             twoMinuteWarnedRef.current = true;
@@ -464,9 +470,6 @@ export default function TakeExamPage() {
   // When the student clicks "Begin Exam" in the instruction modal
   const handleBeginExam = () => {
     if (exam && exam.examCode && examCodeInput === exam.examCode) {
-      // const examcode = "1234";
-      // if (examCodeInput === examcode) {
-      // Request fullscreen before starting
       requestFullscreen();
       setShowInstructionModal(false);
       setCodeError("");
@@ -500,7 +503,7 @@ export default function TakeExamPage() {
           onCancel={handleCancelInstruction}
           codeError={codeError}
           examTitle={exam.title}
-          examInstructions={exam.instructions} // optional
+          examInstructions={exam.instructions}
           examDuration={exam.duration}
           examScheduledAt={exam.scheduledAt}
         />
@@ -529,75 +532,85 @@ export default function TakeExamPage() {
           </div>
         </div>
         <Card className="flex-1 relative">
-  <CardHeader className="pb-3 relative">
-    <CardTitle>
-      <SafeHTMLWithMath
-        html={
-          typeof exam.questions[currentQuestion].content === "object"
-            ? exam.questions[currentQuestion].content.text
-            : exam.questions[currentQuestion].content
-        }
-      />
-    </CardTitle>
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={toggleFlag}
-      className="absolute top-5 right-5"
-    >
-      {flaggedQuestions.has(currentQuestion) ? (
-        <>
-          <FlagOff className="w-4 h-4 mr-2" /> Unflag
-        </>
-      ) : (
-        <>
-          <Flag className="w-4 h-4 mr-2" /> Flag
-        </>
-      )}
-    </Button>
-  </CardHeader>
-  <CardContent className="space-y-4">
-  <hr className="border-t border-gray-300" />
-    <RadioGroup
-      value={answers[exam.questions[currentQuestion].id] || ""}
-      onValueChange={handleAnswer}
-    >
-      {exam.questions[currentQuestion].options.map(
-        (option: any, index: number) => (
-          <div
-            key={index}
-            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
-          >
-            <RadioGroupItem value={index.toString()} id={`option-${index}`} />
-            <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-              <SafeHTMLWithMath html={typeof option === "object" ? option.text : option} />
-            </Label>
-          </div>
-        )
-      )}
-    </RadioGroup>
-  </CardContent>
-  <CardFooter className="flex justify-between pt-4">
-    <Button
-      variant="outline"
-      onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
-      disabled={currentQuestion === 0}
-    >
-      Previous
-    </Button>
-    <Button
-      variant="outline"
-      onClick={() =>
-        setCurrentQuestion((p) =>
-          Math.min(exam.questions.length - 1, p + 1)
-        )
-      }
-      disabled={currentQuestion === exam.questions.length - 1}
-    >
-      Next
-    </Button>
-  </CardFooter>
-</Card>
+          <CardHeader className="pb-3 relative">
+            <CardTitle>
+              <SafeHTMLWithMath
+                html={
+                  typeof exam.questions[currentQuestion].content === "object"
+                    ? exam.questions[currentQuestion].content.text
+                    : exam.questions[currentQuestion].content
+                }
+              />
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFlag}
+              className="absolute top-5 right-5"
+            >
+              {flaggedQuestions.has(currentQuestion) ? (
+                <>
+                  <FlagOff className="w-4 h-4 mr-2" /> Unflag
+                </>
+              ) : (
+                <>
+                  <Flag className="w-4 h-4 mr-2" /> Flag
+                </>
+              )}
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <hr className="border-t border-gray-300" />
+            <RadioGroup
+              value={answers[exam.questions[currentQuestion].id] || ""}
+              onValueChange={handleAnswer}
+            >
+              {exam.questions[currentQuestion].options.map(
+                (option: any, index: number) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-accent"
+                  >
+                    <RadioGroupItem
+                      value={index.toString()}
+                      id={`option-${index}`}
+                    />
+                    <Label
+                      htmlFor={`option-${index}`}
+                      className="flex-1 cursor-pointer"
+                    >
+                      <SafeHTMLWithMath
+                        html={
+                          typeof option === "object" ? option.text : option
+                        }
+                      />
+                    </Label>
+                  </div>
+                )
+              )}
+            </RadioGroup>
+          </CardContent>
+          <CardFooter className="flex justify-between pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentQuestion((p) => Math.max(0, p - 1))}
+              disabled={currentQuestion === 0}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setCurrentQuestion((p) =>
+                  Math.min(exam.questions.length - 1, p + 1)
+                )
+              }
+              disabled={currentQuestion === exam.questions.length - 1}
+            >
+              Next
+            </Button>
+          </CardFooter>
+        </Card>
 
         <div className="mt-4">
           <Button
@@ -645,3 +658,4 @@ export default function TakeExamPage() {
     </div>
   );
 }
+

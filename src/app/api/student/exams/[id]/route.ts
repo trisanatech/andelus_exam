@@ -6,12 +6,13 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Query the exam with its subject, questions, and counts
     const exam = await prisma.exam.findUnique({
       where: { id: params.id },
       include: {
         subject: true,
-        questions: true,
+        questions: {
+          orderBy: { order: 'asc' },
+        },
         _count: { select: { questions: true, submissions: true } },
       },
     });

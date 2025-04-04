@@ -21,7 +21,9 @@ export async function GET(
       where: { id: examId },
       include: {
         subject: true,
-        questions: true,
+        questions: {
+          orderBy: { order: 'asc' },
+        },
         _count: { select: { questions: true, submissions: true } },
       },
     });

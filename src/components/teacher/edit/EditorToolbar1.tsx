@@ -16,6 +16,8 @@ import {
   AlignRight,
   AlignJustify,
   Sigma,
+  
+  SuperscriptIcon, SubscriptIcon, ArrowRightIcon,
 } from "lucide-react";
 
 export function EditorToolbar({ editor }: { editor: any }) {
@@ -97,7 +99,31 @@ export function EditorToolbar({ editor }: { editor: any }) {
           <option value="5">Heading 5</option>
           <option value="6">Heading 6</option>
         </select>
+        <Button
+  type="button"
+  variant={editor.isActive("superscript") ? "default" : "outline"}
+  size="sm"
+  onClick={() => editor.chain().focus().toggleSuperscript().run()}
+>
+  <SuperscriptIcon className="h-4 w-4" />
+</Button>
 
+<Button
+  type="button"
+  variant={editor.isActive("subscript") ? "default" : "outline"}
+  size="sm"
+  onClick={() => editor.chain().focus().toggleSubscript().run()}
+>
+  <SubscriptIcon className="h-4 w-4" />
+</Button>
+<Button
+  type="button"
+  variant="outline"
+  size="sm"
+  onClick={() => editor.chain().focus().insertContent("→").run()}
+>
+  <ArrowRightIcon className="h-4 w-4" /> {/* or simply display the arrow as text */}
+</Button>
         {/* Bullet List */}
         <button
           type="button"

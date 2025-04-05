@@ -13,6 +13,8 @@ import Strike from "@tiptap/extension-strike";
 import TextAlign from "@tiptap/extension-text-align";
 import Link from "@tiptap/extension-link";
 import FontSize from "tiptap-extension-font-size";
+import Superscript from '@tiptap/extension-superscript';
+import Subscript from '@tiptap/extension-subscript';
 import { MathNode } from "./MathNode";
 import { EditorToolbar } from "./EditorToolbar";
 import React from "react";
@@ -35,6 +37,8 @@ const OptionEditor = ({
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Link,
       FontSize.configure({ types: ["textStyle"] }),
+      Superscript,
+      Subscript,
       MathNode,
     ],
     content: content,

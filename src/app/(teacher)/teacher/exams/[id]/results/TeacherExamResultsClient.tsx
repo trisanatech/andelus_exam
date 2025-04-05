@@ -1,23 +1,29 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { Download } from "lucide-react";
 import { useState } from "react";
+import { useRouter, useParams } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
+// Example types – adjust according to your schema
 type Exam = {
+  id: string;
   title: string;
+  subject: { name: string };
   maxScore: number;
-  averageScore: number;
-  passRate: number;
   passingScore: number;
+  averageScore: number;
   topScore: number;
   topScorer?: { name: string };
   scoreDistribution: { range: string; count: number }[];
-  questions: any[];
 };
 
 type Submission = {
@@ -26,7 +32,7 @@ type Submission = {
     id: string;
     displayName?: string;
     username?: string;
-    email: string;
+    email?: string;
   };
   totalScore: number;
   percentage: number;
@@ -34,7 +40,6 @@ type Submission = {
   status: string;
   submittedAt: string;
   gradedAt?: string;
-  feedback?: string;
 };
 
 type TeacherExamResultsClientProps = {
@@ -46,25 +51,19 @@ export default function TeacherExamResultsClient({
   exam,
   submissions,
 }: TeacherExamResultsClientProps) {
-  // Helper to derive the student's name
+  const router = useRouter();
+  const params = useParams() as { id?: string };
+  // Use exam.id if available; otherwise fallback to the dynamic parameter from the URL.
+  const examId = exam?.id || params.id;
+
+  // Helper to derive a student's display name
   const getStudentName = (student: Submission["student"]) =>
     student.displayName || student.username || student.email || "Unknown";
 
-  // State for toggling detailed feedback per submission
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-
-  const toggleExpand = (id: string) => {
-    setExpandedIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
-  };
-
+  const sortedSubmissions = [...submissions].sort(
+    (a, b) => b.totalScore - a.totalScore
+  );
+  
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -79,42 +78,38 @@ export default function TeacherExamResultsClient({
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardTitle className="text-sm font-medium">Average Score</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{exam.averageScore.toFixed(1)}</div>
-            <p className="text-xs text-muted-foreground">out of {exam.maxScore}</p>
+            <p className="text-xs text-muted-foreground">
+              out of {exam.maxScore}
+            </p>
           </CardContent>
         </Card>
 
-        {/* <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pass Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{exam.passRate}%</div>
-            <p className="text-xs text-muted-foreground">passing at {exam.passingScore}+</p>
-          </CardContent>
-        </Card> */}
-
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{submissions.length}</div>
-            <p className="text-xs text-muted-foreground">students attempted</p>
+            <p className="text-xs text-muted-foreground">
+              students attempted
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardTitle className="text-sm font-medium">Top Score</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{exam.topScore}</div>
-            <p className="text-xs text-muted-foreground">achieved by {exam.topScorer?.name || "N/A"}</p>
+            <p className="text-xs text-muted-foreground">
+              achieved by {exam.topScorer?.name || "N/A"}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -150,9 +145,9 @@ export default function TeacherExamResultsClient({
               <div>Grade</div>
               <div>Status</div>
               <div>Submitted At</div>
-              <div>Graded At</div>
+              <div>Details</div>
             </div>
-            {submissions.map((submission) => (
+            {sortedSubmissions.map((submission) => (
               <div key={submission.id} className="grid grid-cols-7 gap-4 p-2 border-t">
                 <div>{getStudentName(submission.student)}</div>
                 <div>{submission.totalScore.toFixed(1)}</div>
@@ -168,38 +163,21 @@ export default function TeacherExamResultsClient({
                 <div className="text-sm text-muted-foreground">
                   {new Date(submission.submittedAt).toLocaleDateString()}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  {submission.gradedAt ? new Date(submission.gradedAt).toLocaleDateString() : "Pending"}
+                
+                <div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      router.push(`/teacher/exams/${examId}/results/${submission.student.id}`)
+                    }
+                  >
+                    View Details
+                  </Button>
                 </div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Detailed Feedback Section (Expandable per Student) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Detailed Feedback</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {submissions.map((submission) => (
-            <div key={submission.id} className="border rounded-lg p-4 mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <div className="font-medium">{getStudentName(submission.student)}</div>
-                <Button variant="link" onClick={() => toggleExpand(submission.id)}>
-                  {expandedIds.has(submission.id) ? "Hide Feedback" : "Show Feedback"}
-                </Button>
-              </div>
-              {expandedIds.has(submission.id) ? (
-                submission.feedback ? (
-                  <div className="prose dark:prose-invert">{submission.feedback}</div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No feedback provided.</p>
-                )
-              ) : null}
-            </div>
-          ))}
         </CardContent>
       </Card>
     </div>

@@ -97,6 +97,8 @@ export function QuestionBuilder({ index }: { index: number }) {
       Link,
       FontSize.configure({ types: ["textStyle"] }),
       MathNode,
+      Superscript, 
+      Subscript, 
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {

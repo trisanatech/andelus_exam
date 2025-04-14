@@ -104,6 +104,8 @@ export function QuestionBuilder({ index, removeQuestion }: QuestionBuilderProps)
       Link,
       FontSize.configure({ types: ["textStyle"] }),
       MathNode,
+      Superscript, 
+      Subscript, 
     ],
     content: initialContent,
     onUpdate: ({ editor }) => {
